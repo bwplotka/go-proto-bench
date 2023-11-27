@@ -7,12 +7,11 @@ package v2testvtproto
 import (
 	binary "encoding/binary"
 	fmt "fmt"
+	proto "google.golang.org/protobuf/proto"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	io "io"
 	math "math"
 	bits "math/bits"
-
-	proto "google.golang.org/protobuf/proto"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (

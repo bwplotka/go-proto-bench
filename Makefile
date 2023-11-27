@@ -69,7 +69,7 @@ endif
 lint: ## Runs various static analysis against our code.
 lint: $(GOLANGCI_LINT) $(COPYRIGHT) format check-git
 	$(call require_clean_work_tree,"detected not clean master before running lint")
-	@echo ">> linting all of the Go files GOGC=${GOGC}"
+	@echo ">> linting all of the Go files"
 	@$(GOLANGCI_LINT) run
 	@echo ">> linting proto"
 	@$(BUF) lint ./proto
