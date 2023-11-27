@@ -1,0 +1,49 @@
+// Copyright 2023 Prometheus Team
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+package prw.v2;
+
+message WriteRequest {
+  // The symbols table for all strings used in WriteRequest message.
+  repeated string symbols = 1;
+
+  repeated TimeSeries timeseries = 2;
+}
+
+// TimeSeries represents samples and labels for a single time series.
+message TimeSeries {
+  // For a timeseries to be valid, and for the samples and exemplars
+  // to be ingested by the remote system properly, the labels or label symbols field is required.
+
+  // Sorted list of label name-value pair references. This list's len is always multiple of 2,
+  // packing tuples of (label name ref, label value ref) refs to WriteRequests.symbols.
+  repeated uint32 label_symbols = 1;
+
+  // Sorted by time, oldest sample first.
+  repeated Sample samples = 2;
+
+  // NOTE(bwplotka): Part of PRW 2.0 there are also metadata, exemplars, histograms and created timestamp, omitted for now as it does not
+  // contribute to the main question--what proto generation should we use and how impactful those decisions are.
+  reserved 3;
+  reserved 4;
+  reserved 5;
+  reserved 6;
+}
+
+message Sample {
+  double value = 1;
+  // timestamp is in ms format, see model/timestamp/timestamp.go for
+  // conversion from time.Time to Prometheus timestamp.
+  int64 timestamp = 2;
+}

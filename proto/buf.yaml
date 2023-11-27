@@ -1,0 +1,7 @@
+version: v1
+lint:
+  use:
+  - DEFAULT
+  enum_zero_value_suffix: _UNKNOWN
+deps:
+- buf.build/gogo/protobuf
