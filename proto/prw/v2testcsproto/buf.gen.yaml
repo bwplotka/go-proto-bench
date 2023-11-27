@@ -1,0 +1,9 @@
+# buf.gen.yaml
+version: v1
+plugins:
+- plugin: go-v1.31.0
+  out: .
+  opt: paths=source_relative,Mprw/v2testcsproto/write.proto=github.com/bwplotka/go-proto-bench/prw/v2testcsproto
+- plugin: fastmarshal-v0.26.0
+  out: .
+  opt: apiversion=v2,paths=source_relative,Mprw/v2testcsproto/write.proto=github.com/bwplotka/go-proto-bench/prw/v2testcsproto

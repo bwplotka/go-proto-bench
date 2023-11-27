@@ -47,7 +47,7 @@ format: $(GOIMPORTS) $(BUF)
 
 .PHONY: proto
 proto: ## Regenerate Go from proto
-proto: $(BUF) $(PROTOC_GEN_GOGOFAST) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_VTPROTO)
+proto: $(BUF) $(PROTOC_GEN_GOGOFAST) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_VTPROTO) $(PROTOC_GEN_FASTMARSHAL)
 	@for version in $(PROTO_VERSIONS); do \
     	echo ">> regenerating $$version" ; \
     	$(BUF) generate --template proto/prw/$$version/buf.gen.yaml --path proto/prw/$$version proto ; \
