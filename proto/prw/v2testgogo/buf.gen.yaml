@@ -3,4 +3,4 @@ version: v1
 plugins:
 - plugin: gogofast-v1.3.3-0.20221024144010-f67b8970b736
   out: .
-  opt: paths=source_relative,go_package=github.com/bwplotka/go-proto-bench/prw/v2testgogo
+  opt: paths=source_relative

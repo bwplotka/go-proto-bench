@@ -12,17 +12,13 @@
 // limitations under the License.
 
 syntax = "proto3";
-package prw.v2testgogo;
-
-import "gogoproto/gogo.proto";
-
-option go_package = "v2testgogo";
+package prw.v2;
 
 message WriteRequest {
   // The symbols table for all strings used in WriteRequest message.
   repeated string symbols = 1;
 
-  repeated TimeSeries timeseries = 2 [(gogoproto.nullable) = false];
+  repeated TimeSeries timeseries = 2;
 }
 
 // TimeSeries represents samples and labels for a single time series.
@@ -33,6 +29,9 @@ message TimeSeries {
   // Sorted list of label name-value pair references. This list's len is always multiple of 2,
   // packing tuples of (label name ref, label value ref) refs to WriteRequests.symbols.
   repeated uint32 label_symbols = 1;
+
+  // Sorted by time, oldest sample first.
+  repeated Sample samples = 2;
 
   // NOTE(bwplotka): Part of PRW 2.0 there are also metadata, exemplars, histograms and created timestamp, omitted for now as it does not
   // contribute to the main question--what proto generation should we use and how impactful those decisions are.

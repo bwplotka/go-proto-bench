@@ -1,5 +1,6 @@
 include .bingo/Variables.mk
-FILES_TO_FMT      ?= $(shell find . -path ./vendor -prune -o -name '*.go' -print)
+FILES_TO_FMT   ?= $(shell find . -path ./vendor -prune -o -name '*.go' -print)
+PROTO_VERSIONS ?= $(shell ls ./proto/prw)
 
 GOBIN ?= $(firstword $(subst :, ,${GOPATH}))/bin
 PATH := $(PATH):$(GOBIN)
@@ -42,17 +43,15 @@ format: $(GOIMPORTS) $(BUF)
 	@echo ">> formatting code"
 	@$(GOIMPORTS) -w $(FILES_TO_FMT)
 	@echo ">> formatting proto"
-	@$(BUF) format ./proto
+	@$(BUF) format -w ./proto
 
 .PHONY: proto
 proto: ## Regenerate Go from proto
-proto: $(BUF) $(PROTOC_GEN_GOGOFAST) $(PROTOC_GEN_GO)
-	@echo ">> regenerating v1testgogo"
-	@$(BUF) generate --template proto/prw/v1testgogo/buf.gen.yaml --path proto/prw/v1testgogo proto
-	@echo ">> regenerating v2testgogo"
-	@$(BUF) generate --template proto/prw/v2testgogo/buf.gen.yaml --path proto/prw/v2testgogo proto
-	@echo ">> regenerating v2"
-	@$(BUF) generate --template proto/prw/v2/buf.gen.yaml --path proto/prw/v2 proto
+proto: $(BUF) $(PROTOC_GEN_GOGOFAST) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_VTPROTO)
+	@for version in $(PROTO_VERSIONS); do \
+    	echo ">> regenerating $$version" ; \
+    	$(BUF) generate --template proto/prw/$$version/buf.gen.yaml --path proto/prw/$$version proto ; \
+	done
 
 .PHONY: check-git
 check-git:
@@ -75,5 +74,5 @@ lint: $(GOLANGCI_LINT) $(COPYRIGHT) format check-git
 	@echo ">> linting proto"
 	@$(BUF) lint ./proto
 	@echo ">> ensuring Copyright headers"
-	@$(COPYRIGHT) $(shell go list -f "{{.Dir}}" ./... | xargs -i find "{}" -name "*.go")
+	@$(COPYRIGHT) $(FILES_TO_FMT)
 	$(call require_clean_work_tree,"detected white noise or/and files without copyright; run 'make lint' file and commit changes.")

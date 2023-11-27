@@ -16,6 +16,8 @@ package prw.v1testgogo;
 
 import "gogoproto/gogo.proto";
 
+option go_package = "v1testgogo";
+
 message WriteRequest {
   repeated TimeSeries timeseries = 1 [(gogoproto.nullable) = false];
   reserved 2;
