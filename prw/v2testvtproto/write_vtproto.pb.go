@@ -841,7 +841,7 @@ func (m *WriteRequest) UnmarshalVTUnsafe(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Symbols = append(m.Symbols, unsafe.String(&dAtA[iNdEx], unsafe.IntegerType(intStringLen)))
+			m.Symbols = append(m.Symbols, unsafe.String(&dAtA[iNdEx], intStringLen))
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {

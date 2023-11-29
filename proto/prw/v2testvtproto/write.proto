@@ -12,7 +12,7 @@
 // limitations under the License.
 
 syntax = "proto3";
-package prw.v2;
+package prw.v2testvtproto;
 
 message WriteRequest {
   // The symbols table for all strings used in WriteRequest message.

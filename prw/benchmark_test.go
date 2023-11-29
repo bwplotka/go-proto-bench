@@ -10,7 +10,9 @@ import (
 	"github.com/bwplotka/go-proto-bench/prw/internal/labels"
 	"github.com/bwplotka/go-proto-bench/prw/v1testgogo"
 	v2 "github.com/bwplotka/go-proto-bench/prw/v2"
+	"github.com/bwplotka/go-proto-bench/prw/v2testcsproto"
 	"github.com/bwplotka/go-proto-bench/prw/v2testgogo"
+	"github.com/bwplotka/go-proto-bench/prw/v2testvtproto"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 )
@@ -88,8 +90,14 @@ func newBenchmarkable(tb testing.TB, wr *base.WriteRequest) base.Benchmarkable {
 		return v1testgogo.NewBenchmarkable(tb, wr)
 	case "v2testgogo":
 		return v2testgogo.NewBenchmarkable(tb, wr)
+	case "v2testgogo-opt":
+		return v2testgogo.NewOptimizedBenchmarkable(tb, wr)
 	case "v2":
 		return v2.NewBenchmarkable(tb, wr)
+	case "v2testcsproto":
+		return v2testcsproto.NewBenchmarkable(tb, wr)
+	case "v2testvtproto":
+		return v2testvtproto.NewBenchmarkable(tb, wr)
 	default:
 		tb.Fatal(*protoChoice, "is not supported. Use --proto flag to choose the proto package to test/benchmark")
 		return nil
@@ -99,43 +107,35 @@ func newBenchmarkable(tb testing.TB, wr *base.WriteRequest) base.Benchmarkable {
 func TestAll(t *testing.T) {
 	wr := newTestWriteRequest(2000, 10, 1)
 
+	tFunc := func(t *testing.T, be base.Benchmarkable) {
+		out := be.DeserializeToBase(be.Serialize())
+		if diff := cmp.Diff(wr, out); diff != "" {
+			t.Fatal("got different base write request after serialization->deserialization", diff)
+		}
+		// Do it again to ensure nothing is shared.
+		out = be.DeserializeToBase(be.Serialize())
+		if diff := cmp.Diff(wr, out); diff != "" {
+			t.Fatal("got different base write request after serialization->deserialization 2x", diff)
+		}
+	}
+
 	t.Run("v1testgogo", func(t *testing.T) {
-		be := v1testgogo.NewBenchmarkable(t, wr)
-		out := be.DeserializeToBase(be.Serialize())
-		if diff := cmp.Diff(wr, out); diff != "" {
-			t.Fatal("got different base write request after serialization->deserialization", diff)
-		}
-		// Do it again to ensure nothing is shared.
-		out = be.DeserializeToBase(be.Serialize())
-		if diff := cmp.Diff(wr, out); diff != "" {
-			t.Fatal("got different base write request after serialization->deserialization 2x", diff)
-		}
+		tFunc(t, v1testgogo.NewBenchmarkable(t, wr))
 	})
-
 	t.Run("v2testgogo", func(t *testing.T) {
-		be := v2testgogo.NewBenchmarkable(t, wr)
-		out := be.DeserializeToBase(be.Serialize())
-		if diff := cmp.Diff(wr, out); diff != "" {
-			t.Fatal("got different base write request after serialization->deserialization", diff)
-		}
-		// Do it again to ensure nothing is shared.
-		out = be.DeserializeToBase(be.Serialize())
-		if diff := cmp.Diff(wr, out); diff != "" {
-			t.Fatal("got different base write request after serialization->deserialization 2x", diff)
-		}
+		tFunc(t, v2testgogo.NewBenchmarkable(t, wr))
 	})
-
+	t.Run("v2testgogo-opt", func(t *testing.T) {
+		tFunc(t, v2testgogo.NewOptimizedBenchmarkable(t, wr))
+	})
 	t.Run("v2", func(t *testing.T) {
-		be := v2.NewBenchmarkable(t, wr)
-		out := be.DeserializeToBase(be.Serialize())
-		if diff := cmp.Diff(wr, out); diff != "" {
-			t.Fatal("got different base write request after serialization->deserialization", diff)
-		}
-		// Do it again to ensure nothing is shared.
-		out = be.DeserializeToBase(be.Serialize())
-		if diff := cmp.Diff(wr, out); diff != "" {
-			t.Fatal("got different base write request after serialization->deserialization 2x", diff)
-		}
+		tFunc(t, v2.NewBenchmarkable(t, wr))
+	})
+	t.Run("v2testcsproto", func(t *testing.T) {
+		tFunc(t, v2testcsproto.NewBenchmarkable(t, wr))
+	})
+	t.Run("v2testvtproto", func(t *testing.T) {
+		tFunc(t, v2testvtproto.NewBenchmarkable(t, wr))
 	})
 }
 

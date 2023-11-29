@@ -1,6 +1,8 @@
 include .bingo/Variables.mk
 FILES_TO_FMT   ?= $(shell find . -path ./vendor -prune -o -name '*.go' -print)
 PROTO_VERSIONS ?= $(shell ls ./proto/prw)
+
+PB_VERSIONS ?= v2testvtproto v2testcsproto #v1testgogo v2testgogo-opt v2 #v2testgogo-proto might be not interesting at this point.
 BENCHMARKS ?= BenchmarkPRWSerialize BenchmarkPRWDeserialize BenchmarkPRWDeserializeToBase
 
 BENCH_RESULT_DIR ?= ./results
@@ -55,8 +57,6 @@ proto: $(BUF) $(PROTOC_GEN_GOGOFAST) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_VTPROTO) $
     	echo ">> regenerating $$version" ; \
     	$(BUF) generate --template proto/prw/$$version/buf.gen.yaml --path proto/prw/$$version proto ; \
 	done
-	# Hack to fix https://github.com/planetscale/vtprotobuf/issues/117
-	$(SED) -i 's/, intStringLen))/, unsafe.IntegerType(intStringLen)))/' ./prw/v2testvtproto/write_vtproto.pb.go
 
 .PHONY: check-git
 check-git:
@@ -74,7 +74,7 @@ VER := $(PB)$(VER_EXTRA)
 bench:
 	@mkdir -p $(BENCH_RESULT_DIR)/$(BENCH_NAME)
 	@echo ">> benchmarking $(VER)"
-	go test ./prw -run '^unmatched' -bench $(BENCH_NAME) -benchtime 5s -count 6 \
+	go test ./prw -run '^$$' -bench '^$(BENCH_NAME)$$' -benchtime 5s -count 6 \
 		--proto $(PB) \
  		-cpu 4 \
  		-benchmem \
@@ -83,7 +83,7 @@ bench:
 
 .PHONY: bench-all
 bench-all:
-	@for version in $(PROTO_VERSIONS); do \
+	@for version in $(PB_VERSIONS); do \
 		for bench in $(BENCHMARKS); do \
         		echo ">> benchmarking $$bench for $$version" ; \
         		$(MAKE) bench PB=$$version BENCH_NAME=$$bench ; \
@@ -93,8 +93,10 @@ bench-all:
 .PHONY: cmp
 cmp: $(BENCHSTAT)
 	@cd $(BENCH_RESULT_DIR) && for bench in $(BENCHMARKS); do \
+  		cd $$bench ; \
 		echo ">> comparing $$bench" ; \
-		$(BENCHSTAT) $$bench/*.txt ; \
+		$(BENCHSTAT) *.txt ; \
+		cd .. ; \
 	done
 
 # PROTIP:

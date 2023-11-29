@@ -1,10 +1,10 @@
-package v2
+package v2testcsproto
 
 import (
 	"testing"
 
+	"github.com/CrowdStrike/csproto"
 	"github.com/bwplotka/go-proto-bench/prw/internal/base"
-	"google.golang.org/protobuf/proto"
 )
 
 type b struct {
@@ -13,15 +13,13 @@ type b struct {
 	src *WriteRequest
 }
 
-func (x *WriteRequest) Size() int {
-	return proto.Size(x) // might be slow, int(x.sizeCache) works too, but not sure if safe.
-}
 func NewBenchmarkable(tb testing.TB, wr *base.WriteRequest) base.Benchmarkable {
 	return &b{tb: tb, src: fromBase(wr)}
 }
 
 func (b *b) Serialize() []byte {
-	out, err := proto.Marshal(b.src)
+	// csproto will use generated fastmarshal methods.
+	out, err := csproto.Marshal(b.src)
 	if err != nil {
 		b.tb.Fatal(err)
 	}
@@ -30,7 +28,8 @@ func (b *b) Serialize() []byte {
 
 func (b *b) Deserialize(in []byte) base.Sizer {
 	obj := &WriteRequest{}
-	if err := proto.Unmarshal(in, obj); err != nil {
+	// csproto will use generated fastunmarshal methods.
+	if err := csproto.Unmarshal(in, obj); err != nil {
 		b.tb.Fatal(err)
 	}
 	return obj
@@ -38,7 +37,7 @@ func (b *b) Deserialize(in []byte) base.Sizer {
 
 func (b *b) DeserializeToBase(in []byte) *base.WriteRequest {
 	obj := &WriteRequest{}
-	if err := proto.Unmarshal(in, obj); err != nil {
+	if err := csproto.Unmarshal(in, obj); err != nil {
 		b.tb.Fatal(err)
 	}
 	return toBase(obj)
