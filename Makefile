@@ -1,6 +1,9 @@
 include .bingo/Variables.mk
 FILES_TO_FMT   ?= $(shell find . -path ./vendor -prune -o -name '*.go' -print)
 PROTO_VERSIONS ?= $(shell ls ./proto/prw)
+BENCHMARKS ?= BenchmarkPRWSerialize BenchmarkPRWDeserialize BenchmarkPRWDeserializeToBase
+
+BENCH_RESULT_DIR ?= ./results
 
 GOBIN ?= $(firstword $(subst :, ,${GOPATH}))/bin
 PATH := $(PATH):$(GOBIN)
@@ -66,33 +69,32 @@ endif
 VER_EXTRA ?=
 PB ?= v2
 BENCH_NAME ?= BenchmarkPRWSerialize
-BENCH_RESULT_DIR ?= ./results
-VER := $(BENCH_NAME)-$(PB)$(VER_EXTRA)
+VER := $(PB)$(VER_EXTRA)
 .PHONY: bench
 bench:
-	@mkdir -p $(BENCH_RESULT_DIR)
+	@mkdir -p $(BENCH_RESULT_DIR)/$(BENCH_NAME)
 	@echo ">> benchmarking $(VER)"
 	go test ./prw -run '^unmatched' -bench $(BENCH_NAME) -benchtime 5s -count 6 \
 		--proto $(PB) \
  		-cpu 4 \
  		-benchmem \
- 		-memprofile=$(BENCH_RESULT_DIR)/$(VER).mem.pprof -cpuprofile=$(BENCH_RESULT_DIR)/$(VER).cpu.pprof \
- 		| tee $(BENCH_RESULT_DIR)/$(VER).txt;
+ 		-memprofile=$(BENCH_RESULT_DIR)/$(BENCH_NAME)/$(VER).mem.pprof -cpuprofile=$(BENCH_RESULT_DIR)/$(BENCH_NAME)/$(VER).cpu.pprof \
+ 		| tee $(BENCH_RESULT_DIR)/$(BENCH_NAME)/$(VER).txt;
 
 .PHONY: bench-all
 bench-all:
 	@for version in $(PROTO_VERSIONS); do \
-		echo ">> benchmarking $$version" ; \
-		$(MAKE) bench PB=$$version BENCH_NAME="BenchmarkPRWSerialize" ; \
-		$(MAKE) bench PB=$$version BENCH_NAME="BenchmarkPRWDeserialize" ; \
-		$(MAKE) bench PB=$$version BENCH_NAME="BenchmarkPRWDeserializeToBase" ; \
+		for bench in $(BENCHMARKS); do \
+        		echo ">> benchmarking $$bench for $$version" ; \
+        		$(MAKE) bench PB=$$version BENCH_NAME=$$bench ; \
+        	done \
 	done
 
 .PHONY: cmp
 cmp: $(BENCHSTAT)
-	@for version in $(PROTO_VERSIONS); do \
-    	echo ">> comparing $$version" ; \
-    	$(BENCHSTAT) generate --template proto/prw/$$version/buf.gen.yaml --path proto/prw/$$version proto ; \
+	@cd $(BENCH_RESULT_DIR) && for bench in $(BENCHMARKS); do \
+		echo ">> comparing $$bench" ; \
+		$(BENCHSTAT) $$bench/*.txt ; \
 	done
 
 # PROTIP:
