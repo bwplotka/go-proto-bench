@@ -4,6 +4,6 @@ plugins:
 - plugin: go-v1.31.0
   out: .
   opt: paths=source_relative,Mprw/v2testvtproto/write.proto=github.com/bwplotka/go-proto-bench/prw/v2testvtproto
-- plugin: go-vtproto-v0.5.0
+- plugin: go-vtproto-v0.5.1-0.20231123090031-9877c8193121 # Latest version with unmarshal_unsafe
   out: .
-  opt: paths=source_relative,Mprw/v2testvtproto/write.proto=github.com/bwplotka/go-proto-bench/prw/v2testvtproto
+  opt: paths=source_relative,Mprw/v2testvtproto/write.proto=github.com/bwplotka/go-proto-bench/prw/v2testvtproto,features=marshal+unmarshal+unmarshal_unsafe+size+pool+clone,pool=prw.v2.Sample,pool=prw.v2.Timeseries

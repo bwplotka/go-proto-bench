@@ -47,11 +47,11 @@ $(PROTOC_GEN_FASTMARSHAL): $(BINGO_DIR)/protoc-gen-fastmarshal.mod
 	@echo "(re)installing $(GOBIN)/protoc-gen-fastmarshal-v0.26.0"
 	@cd $(BINGO_DIR) && GOWORK=off $(GO) build -mod=mod -modfile=protoc-gen-fastmarshal.mod -o=$(GOBIN)/protoc-gen-fastmarshal-v0.26.0 "github.com/CrowdStrike/csproto/cmd/protoc-gen-fastmarshal"
 
-PROTOC_GEN_GO_VTPROTO := $(GOBIN)/protoc-gen-go-vtproto-v0.5.0
+PROTOC_GEN_GO_VTPROTO := $(GOBIN)/protoc-gen-go-vtproto-v0.5.1-0.20231123090031-9877c8193121
 $(PROTOC_GEN_GO_VTPROTO): $(BINGO_DIR)/protoc-gen-go-vtproto.mod
 	@# Install binary/ries using Go 1.14+ build command. This is using bwplotka/bingo-controlled, separate go module with pinned dependencies.
-	@echo "(re)installing $(GOBIN)/protoc-gen-go-vtproto-v0.5.0"
-	@cd $(BINGO_DIR) && GOWORK=off $(GO) build -mod=mod -modfile=protoc-gen-go-vtproto.mod -o=$(GOBIN)/protoc-gen-go-vtproto-v0.5.0 "github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto"
+	@echo "(re)installing $(GOBIN)/protoc-gen-go-vtproto-v0.5.1-0.20231123090031-9877c8193121"
+	@cd $(BINGO_DIR) && GOWORK=off $(GO) build -mod=mod -modfile=protoc-gen-go-vtproto.mod -o=$(GOBIN)/protoc-gen-go-vtproto-v0.5.1-0.20231123090031-9877c8193121 "github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto"
 
 PROTOC_GEN_GO := $(GOBIN)/protoc-gen-go-v1.31.0
 $(PROTOC_GEN_GO): $(BINGO_DIR)/protoc-gen-go.mod
