@@ -34,6 +34,9 @@ message TimeSeries {
   // packing tuples of (label name ref, label value ref) refs to WriteRequests.symbols.
   repeated uint32 label_symbols = 1;
 
+  // Sorted by time, oldest sample first.
+  repeated Sample samples = 2 [(gogoproto.nullable) = false];
+
   // NOTE(bwplotka): Part of PRW 2.0 there are also metadata, exemplars, histograms and created timestamp, omitted for now as it does not
   // contribute to the main question--what proto generation should we use and how impactful those decisions are.
   reserved 3;

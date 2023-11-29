@@ -52,6 +52,8 @@ proto: $(BUF) $(PROTOC_GEN_GOGOFAST) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_VTPROTO) $
     	echo ">> regenerating $$version" ; \
     	$(BUF) generate --template proto/prw/$$version/buf.gen.yaml --path proto/prw/$$version proto ; \
 	done
+	# Hack to fix https://github.com/planetscale/vtprotobuf/issues/117
+	$(SED) -i 's/, intStringLen))/, unsafe.IntegerType(intStringLen)))/' ./prw/v2testvtproto/write_vtproto.pb.go
 
 .PHONY: check-git
 check-git:
@@ -60,6 +62,38 @@ ifneq ($(GIT),)
 else
 	@echo >&2 "No git binary found."; exit 1
 endif
+
+VER_EXTRA ?=
+PB ?= v2
+BENCH_NAME ?= BenchmarkPRWSerialize
+BENCH_RESULT_DIR ?= ./results
+VER := $(BENCH_NAME)-$(PB)$(VER_EXTRA)
+.PHONY: bench
+bench:
+	@mkdir -p $(BENCH_RESULT_DIR)
+	@echo ">> benchmarking $(VER)"
+	go test ./prw -run '^unmatched' -bench $(BENCH_NAME) -benchtime 5s -count 6 \
+		--proto $(PB) \
+ 		-cpu 4 \
+ 		-benchmem \
+ 		-memprofile=$(BENCH_RESULT_DIR)/$(VER).mem.pprof -cpuprofile=$(BENCH_RESULT_DIR)/$(VER).cpu.pprof \
+ 		| tee $(BENCH_RESULT_DIR)/$(VER).txt;
+
+.PHONY: bench-all
+bench-all:
+	@for version in $(PROTO_VERSIONS); do \
+		echo ">> benchmarking $$version" ; \
+		$(MAKE) bench PB=$$version BENCH_NAME="BenchmarkPRWSerialize" ; \
+		$(MAKE) bench PB=$$version BENCH_NAME="BenchmarkPRWDeserialize" ; \
+		$(MAKE) bench PB=$$version BENCH_NAME="BenchmarkPRWDeserializeToBase" ; \
+	done
+
+.PHONY: cmp
+cmp: $(BENCHSTAT)
+	@for version in $(PROTO_VERSIONS); do \
+    	echo ">> comparing $$version" ; \
+    	$(BENCHSTAT) generate --template proto/prw/$$version/buf.gen.yaml --path proto/prw/$$version proto ; \
+	done
 
 # PROTIP:
 # Add
