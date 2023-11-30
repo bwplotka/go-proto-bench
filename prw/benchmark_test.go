@@ -104,6 +104,23 @@ func newBenchmarkable(tb testing.TB, wr *base.WriteRequest) base.Benchmarkable {
 	}
 }
 
+func TestGogoToVtprotoAndBack(t *testing.T) {
+	wr := newTestWriteRequest(2000, 10, 1)
+
+	g := v2testgogo.NewBenchmarkable(t, wr)
+	vt := v2testvtproto.NewBenchmarkable(t, wr)
+
+	out := vt.DeserializeToBase(g.Serialize())
+	if diff := cmp.Diff(wr, out); diff != "" {
+		t.Fatal("got different base write request after gogo.serialization->vtproto.deserialization", diff)
+	}
+
+	out = g.DeserializeToBase(vt.Serialize())
+	if diff := cmp.Diff(wr, out); diff != "" {
+		t.Fatal("got different base write request after vtserialization->gogo.deserialization", diff)
+	}
+}
+
 func TestAll(t *testing.T) {
 	wr := newTestWriteRequest(2000, 10, 1)
 
